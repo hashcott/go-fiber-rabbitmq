@@ -1,8 +1,11 @@
 package main
 
 import (
+	"log"
 	"os"
 
+	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/streadway/amqp"
 )
 
@@ -41,4 +44,33 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+
+	// Create a new fiber instance
+	app := fiber.New()
+
+	// Add middleware
+	app.Use(
+		logger.New(),
+	)
+
+	// Add route
+	app.Get("/send", func(c *fiber.Ctx) error {
+		// Create message to publish
+		message := amqp.Publishing{
+			ContentType: "text/plain",
+			Body:        []byte(c.Query("msg")),
+		}
+		// Attempt to publish a message to the queue.
+		if err := channelRabbitMQ.Publish(
+			"",              // exchange
+			"QueueService1", // queue name
+			false,           // mandatory
+			false,           // immediate
+			message,         // message to publish
+		); err != nil {
+			return err
+		}
+		return nil
+	})
+	log.Fatal(app.Listen(":3000"))
 }
