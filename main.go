@@ -17,4 +17,28 @@ func main() {
 	}
 	defer connectRabbitMQ.Close()
 
+	// Opening a channel to our RabbitMQ
+	// instance over the connection we have already
+	// established
+
+	channelRabbitMQ, err := connectRabbitMQ.Channel()
+
+	if err != nil {
+		panic(err)
+	}
+	defer channelRabbitMQ.Close()
+
+	// With the instance and declare Queues that we can
+	// publish and subscribe to
+	_, err = channelRabbitMQ.QueueDeclare(
+		"QueueService1", // queue name
+		true,            // durable
+		false,           // auto delete
+		false,           // exclusive
+		false,           // no wait
+		nil,             // arguments
+	)
+	if err != nil {
+		panic(err)
+	}
 }
