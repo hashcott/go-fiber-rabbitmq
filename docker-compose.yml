@@ -17,6 +17,21 @@ services:
     restart: always
     networks:
       - dev-network
+    # Create service with Fiber sender.
+  sender:
+    container_name: sender
+    ports:
+      - 3000:3000
+    build:
+      context: .
+      dockerfile: Dockerfile-sender
+    environment:
+      AMQP_SERVER_URL: amqp://guest:guest@message-broker:5672/
+    restart: always
+    networks:
+      - dev-network
+    depends_on:
+      - message-broker
 
 networks:
   # Create a new Docker network.
